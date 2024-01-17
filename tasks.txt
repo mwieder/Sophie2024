@@ -1,0 +1,49 @@
+csv -> tsv formatting
+cleaned headers
+cleaned data
+
+To create a proper .tsv file after making spreadsheet changes:
+Read the .ods file into LibreOffice
+Save a Copy... with format .csv
+Close the .ods file
+Open the .csv file using tab separator *and* check "trim spaces"
+Save a copy as .csv (rename to .tsv)
+
+using two Berkeley district maps
+cross-referenced precincts to districts
+maps are filed in the "maps" subdirectory
+
+received legend information from registrar of voters
+"HISTORY CODE FOR VOTER HISTORY-2023.pdf"
+
+more data cleanup/corrections
+country == USA
+city == Albany
+still more out-of-country embedded commas
+
+created don't mail and don't contact categories
+header: Xno_mail
+XC: don't mail - mailing address is out of country
+XS: possible don't mail - mailing address is out of state
+don't contact if no physical address
+
+created apartment category for possible no physical contact
+header: Xno_addr
+XA: address is in an apartment building
+ basis: 10 or more units at an address
+ some will be miscategorized, but if we work on the assumption that
+ the apartment buildings we missed cancel the ones that aren't apartments
+ then we have a ballpark estimate to start the discussion
+XN: there is no local address on file
+ Note that there are several people registered at the marina.
+ These are either at 1/2 Sea Wall or 0/1 University Ave.
+ We didn't flag these.
+XD: student housing
+
+Fixed yet more bad data: street address in apartment # field
+
+VOTER ID 2101934 changed from 650 Addison to 651 Addison
+Note: someone is registered at 0 Walnut/Vine St. (Peet's Coffee)
+
+generated plots
+

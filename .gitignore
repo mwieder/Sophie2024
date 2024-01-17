@@ -1,0 +1,12 @@
+*.csv
+*.pdf
+*.tsv
+*.ods
+*.bak
+*.png
+shauna.*
+functionsbak.txt
+sfunctions.txt
+.RData
+.Rhistory
+

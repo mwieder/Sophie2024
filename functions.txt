@@ -6,10 +6,10 @@
 ##############################################################################
 
 
-# install.packages("tidyverse")	#only need to execute this command once.
-#	It installs a "package" of R functions that we'll need.
+# install.packages("tidyverse")	# Only need to execute this command once.
+#						# It installs a "package" of R functions that we'll need.
 
-library(tidyverse)		# do execute this every time you open a new R session.
+library(tidyverse)		# Do execute this every time you open a new R session.
 
 # Use the tsv file (by saving it into a dataframe named "data").
 # sep="\t" says to read it as a tab-delimited file
@@ -24,47 +24,6 @@ data <- read.tsv("BerkeleyVoters.tsv")
 header <- head(data,0)	# retrieve the headings but 0 lines of data
 header				# list them on the screen
 
-#################################################
-# some exploration
-#################################################
-
-lastElection <- factor(data$X11.08.2022.november.8.2022.statewide.general.election)
-#levels(lastElection)
-
-# "A" - they voted by mail
-# "N" - they were eligible but did not vote
-# "V" - they did vote (presumably in person?)
-# "NA" - none of the above (blank) - they were not qualified to vote in that (local) election
-
-# See the HISTORY CODE FOR VOTER HISTORY-2023.pdf file for voting history info 
-# including the codes, that was sent to us from digital.services@acgov.org
-
-
-# Plot a simple bargraph
-#plot(lastElection)
-
-# display the totals
-#summary(lastElection)
-maxVoter <- max(data$voter_id)		# retrieve the highest voter ID number
-
-# get one field's data
-dataFromColumn <- function(pColumn)
-{
-	cD = factor(data[[pColumn]])
-}
-x = dataFromColumn("precinct")
-
-# data exploration using tidyverse
-# show number of voters in each district
-showVotersBy <- function(pColumn)
-{
-	data %>%
-	select(all_of(pColumn)) %>%	# get all districts
-	count(data[[pColumn]]) %>%	# count the rows assigned to each district
-	arrange(desc(n)) %>%			# sort in descending number of rows (voters)
-	View()
-}
-#d = showVotersBy("district")		# simple chart of total number of voters in each district
 
 #################################################
 ## DATA CLEANUP SECTION
@@ -117,226 +76,45 @@ zz <- function()
 
 
 #################################################
-## VOTER FUNCTIONS
+# some exploration in R
 #################################################
 
-# No constants in Rlang. Really?
-election2020Date = "11.03.2020"
-election2016Date = "11.08.2016"
-election2012Date = "11.06.2012"
+lastElection <- factor(data$X11.08.2022.november.8.2022.statewide.general.election)
+#levels(lastElection)
 
-dateMinusAge <- function(youngestAge, electionDate)
+# "A" - they voted by mail
+# "N" - they were eligible but did not vote
+# "V" - they did vote (presumably in person?)
+# "NA" - none of the above (blank):
+#          that election occurred before this voter registered, OR
+#          that election was a local one in which this voter was not qualified to vote
+
+# See the HISTORY CODE FOR VOTER HISTORY-2023.pdf file for voting history info 
+# including the codes, that was sent to us from digital.services@acgov.org
+
+
+# Plot a simple bargraph
+#plot(lastElection)
+
+# Display the totals
+#summary(lastElection)
+maxVoter <- max(data$voter_id)		# retrieve the highest voter ID number
+
+# Get one field's data
+dataFromColumn <- function(pColumn)
 {
-	y = year(mdy(electionDate))
-	m = month(mdy(electionDate))
-	d = day(mdy(electionDate))
-	minYear <- y - youngestAge
-	targetDate <- paste0(m,".",d,".",minYear)
+	cD = factor(data[[pColumn]])
 }
-
-firstTimeVotersInElection <- function(df, youngestAge, electionDate)
-{
-	youngestDate <- dateMinusAge(youngestAge, electionDate)
-	df %>%
-	filter(
-		mdy(birth_date) > mdy(youngestDate) # birth_date > 18 years before last presidential election
-	)
-}
-
-stopAgeForVotersInElection <- function(df, oldestAge, electionDate)
-{
-	oldestDate <- dateMinusAge(oldestAge, electionDate)
-	df %>%
-	filter(
-		mdy(birth_date) < mdy(oldestDate) # birth_date > 18 years before last presidential election
-	)
-}
-
-firstTimeVotersIn2024Election <- function(df)
-{
-	firstTimeVotersInElection(df, 18, "11.03.2020")
-}
-
-# young voters who turned 18 after the 2016 election but before the 2020 election
-# have to ignore NAs because some voters were of age but only registered after the 2020 election
-firstTimeVotersIn2020Election <- function(df)
-{
-	df %>%
- 	# birth_date > 18 years before 2016 presidential election
- 	# and birth_date < 18 years before 2020 presidential election
-	filter(mdy(birth_date) > mdy("11.08.1998")) %>%
-	filter(mdy(birth_date) < mdy("11.03.2002"))
-
-	# here we could filter on original_reg_date but is.na does the job
-#	filter(!is.na(X11.03.2020.2020.presidential.election))
-}
-
-newfirstTimeVotersIn2020Election <- function(df)
-{
-	df %>%
- 	# birth_date > 18 years before 2016 presidential election
- 	# and birth_date < 18 years before 2020 presidential election
-	firstTimeVotersInElection(18, election2016Date) %>%
-	stopAgeForVotersInElection(18, election2020Date) %>%
-
-	# here we could filter on original_reg_date but is.na does the job
-	filter(!is.na(X11.03.2020.2020.presidential.election))
-}
-
-firstTimeVotersIn2016Election <- function(df)
-{
-	df %>%
- 	# birth_date > 18 years before 2012 presidential election
- 	# and birth_date < 18 years before 2016 presidential election
-	firstTimeVotersInElection(18, election2012Date) %>%
-	stopAgeForVotersInElection(18, election2016Date) %>%
-
-	# here we could filter on original_reg_date but is.na does the job
-	filter(!is.na(X11.08.2016.2016.general.election))
-}
-
-votedIn2020 <- function(df)
-{
-	df %>%
-	filter(
-		(X11.03.2020.2020.presidential.election == 'A') |	# either by mail ("absentee") or
-		(X11.03.2020.2020.presidential.election == 'V')	# voted in person
-	)
-}
-
-votedIn2016 <- function(df)
-{
-	df %>%
-	filter(
-		(X11.08.2016.2016.general.election == 'A') |
-		(X11.08.2016.2016.general.election == 'V')
-	)
-}
-
-votedIn2012 <- function(df)
-{
-	df %>%
-	filter(
-		(X11.06.2012.general.election == 'A') |
-		(X11.06.2012.general.election == 'V')
-	)
-}
+x = dataFromColumn("precinct")
 
 #################################################
-## 2024 ELECTION DATAFRAMES
+#  Start creating simple bar charts to visualize and compare the data by district
+#  https://stats.oarc.ucla.edu/r/faq/how-can-i-add-features-or-dimensions-to-my-bar-plot/
 #################################################
-
-# get counts by residence type within each district
-dfResidenceTypeByDistrict <-
-	data %>%
-	group_by(district, Xreg_at) %>%
-	tally()
-#View(dfResidenceTypeByDistrict)
-
-# create a dataframe containing everyone who voted in the last three presidential elections
-dfVotedIn3 <-
-	data %>%
-	votedIn2020() %>%
-	votedIn2016() %>%
-	votedIn2012() %>%
-	group_by(district, Xreg_at) %>%
-	tally()
-
-dfFirstTimeVoters <-
-	data %>%
-	filter(is.na(Xreg_at)) %>%			# local addresses only
-	group_by(district, Xreg_at) %>%
-	firstTimeVotersIn2024Election() %>%
-	tally()		# calculate the voter counts per district
-
-dfFirstTimeVotersByResidenceType <-		# includes all types of address
-	data %>%
-	group_by(district, Xreg_at) %>%
-	firstTimeVotersIn2024Election() %>%
-	tally()		# calculate the voter counts per district
-
-#################################################
-## 2020 ELECTION DATAFRAMES
-#################################################
-
-# young voters who turned 18 after the 2016 election and before the 2020 election
-dfFirstTimeVotersIn2020Election <-
-	data %>%
-	filter(is.na(Xreg_at)) %>%			# local addresses only
-	group_by(district, Xreg_at) %>%
-	firstTimeVotersIn2020Election() %>%
-	add_count("total")
-
-df2020FirstTimeVotersByResidenceType <-	# includes all types of address
-	data %>%
-	group_by(district, Xreg_at) %>%
-	firstTimeVotersIn2020Election() %>%
-	add_count("total")
-
-# young voters who turned 18 and registered after the 2016 election
-dfFirstTimeLocalAddressVotersAfter2016 <-
-	data %>%
-	firstTimeVotersIn2020Election() %>%
-	filter(is.na(Xreg_at)) %>%			# local addresses only
-	group_by(district, Xreg_at) %>%
-	tally()		# calculate the voter counts per district
-
-# young voters who turned 18 and registered after the 2016 election
-dfFirstTimeVotersAfter2016 <-			# includes all types of address
-	data %>%
-	firstTimeVotersIn2020Election() %>%
-	group_by(district, Xreg_at) %>%
-	tally()		# calculate the voter counts per district
-
-# we want to see voter turnout in 2020 for young voters who turned 18 after the 2016 election
-dfFirstTimeVoterTurnoutAfter2016 <-		# includes all types of address
-	data %>%
-	firstTimeVotersIn2020Election() %>%
-	votedIn2020() %>%
-	group_by(district, Xreg_at) %>%
-	tally()
-
-# this dataframe allows us to see how many newly registered voters actually voted in 2020
-df2020NewVotersByVotedStatus <-		# includes all types of address
-	data %>%
-	firstTimeVotersIn2020Election() %>%
-	group_by(district, X11.03.2020.2020.presidential.election) %>%
-	tally()
-
-#################################################
-# INFO ABOUT RESIDENCE AND MAILING ADDRESSES
-#################################################
-
-# To include blanks in totals, use the addNA() function
-
-# Summarize the current registered address data.
-# data$no_local_addr is a new column we created to tell whether an address is an apartment ("XA"),
-#	a student dorm ("XD"), missing entirely, probably homeless ("XN"), or "NA" (none of the above,
-#	i.e. a local address in Berkeley that is not an apartment or dorm)
-# NOTE that there are a small number of voters registered at the Berkeley Marina/Yacht Club,
-#	Peet's Coffee (Walnut/Vine), and other non-home addresses. They are lumped in with the
-#	other local addresses.
-
-#levels(data$addNA(data$no_local_addr))	# list the codes for registered-at address types ("XA, etc.)
-#summary(addNA(data$no_local_addr))		# show the number of voters at each reg address type
-
-# Summarize the current mailing address data
-# data$no_local_mail_addr is the second new column we created, to tell whether a mailing address is
-#	out of country ("XC"), out of state ("XS"), or none of the above ("NA") i.e. local
-# Note that most voters do not have a separate mailing address
-
-#levels(data$addNA(data$no_local_mail_addr))	# list the codes for mailing address types ("XC", etc.)
-#summary(addNA(data$no_local_mail_addr))		# show the number of voters for each mailing address type
-
-
-##
-# Start creating bar charts to visualize and compare the data by district
-# https://stats.oarc.ucla.edu/r/faq/how-can-i-add-features-or-dimensions-to-my-bar-plot/
-##
 
 # The randomColor() function selects a random color each time it is used.
 # So when we select a random color for each item (district, address type, etc.), the
-# bar chart will have a different set of colors each time it is executed.
+# bar chart will have a different set of random colors each time it is executed.
 # The factor of 16 is to ensure colors that have at least 16 levels of difference from each other.
 randomColor <- function()
 {
@@ -432,29 +210,262 @@ plotStackedColumnByDistrict <- function(pColumn, pLegend="legend", pTitle="your 
 #plotStackedColumnByDistrict("Xreg_at", pLegend="Residence type", pTitle="Walkability")
 #plotStackedColumnByDistrict("Xmail_to", pLegend="Residence type", pTitle="Local mailing addresses")
 
+
 #################################################
-## PRINTING
+## Data exploration using tidyverse (which uses the ggplot2 library for more design control over plots)
+#################################################
+
+# Show number of voters in each district
+showVotersBy <- function(columnName)
+{
+	data %>%
+	select(all_of(columnName)) %>%		# get all districts
+	count(data[[columnName]]) %>%		# count the rows assigned to each district
+	arrange(desc(n)) %>%				# sort in descending number of rows (voters)
+	View()
+}
+#d = showVotersBy("district")		# simple chart of total number of voters in each district
+
+
+#################################################
+## VOTER FUNCTIONS
+#################################################
+
+# The dates of the last three presidential elections:
+election2020Date = "11.03.2020"
+election2016Date = "11.08.2016"
+election2012Date = "11.06.2012"
+
+votedIn2020 <- function(df)
+{
+	df %>%
+	filter(
+		(X11.03.2020.2020.presidential.election == 'A') |	# either by mail ("absentee") or
+		(X11.03.2020.2020.presidential.election == 'V')	# voted in person
+	)
+}
+
+votedIn2016 <- function(df)
+{
+	df %>%
+	filter(
+		(X11.08.2016.2016.general.election == 'A') |
+		(X11.08.2016.2016.general.election == 'V')
+	)
+}
+
+votedIn2012 <- function(df)
+{
+	df %>%
+	filter(
+		(X11.06.2012.general.election == 'A') |
+		(X11.06.2012.general.election == 'V')
+	)
+}
+
+##
+## Functions to find voters in various age ranges as of selected election dates.
+##
+
+# Find the (birth)date that is exactly beginAge years earlier than the electionDate in question.
+# We will use this function below to find voters who are 18 by various election dates.
+electionDateMinusAge <- function(beginAge, electionDate)	
+{
+	y = year(mdy(electionDate))
+	m = month(mdy(electionDate))
+	d = day(mdy(electionDate))
+	minYear <- y - beginAge
+	targetDate <- paste0(m,".",d,".",minYear)
+}
+
+# Select all voters who are younger than beginAge (such as 18) on the selected electionDate
+# by filtering out (omitting) all voters who are older than 18 on that date.
+firstTimeVotersInElection <- function(df, beginAge, electionDate)
+{
+	youngestDate <- electionDateMinusAge(beginAge, electionDate)
+	df %>%
+	filter(
+		mdy(birth_date) > mdy(youngestDate)	# birth_date > 18 years as of last presidential election
+	)
+}
+# Select all voters who are younger than the oldestAge before the electionDate
+stopAgeForVotersInElection <- function(df, C, electionDate)
+{
+	oldestDate <- electionDateMinusAge(oldestAge, electionDate)
+	df %>%
+	filter(
+		mdy(birth_date) < mdy(oldestDate) # birth_date > 18 years before last presidential election
+	)
+}
+
+firstTimeVotersIn2024Election <- function(df)
+{
+	firstTimeVotersInElection(df, 18, "11.03.2020")
+}
+
+# Young voters who turned 18 after the 2016 election but before the 2020 election.
+# Have to ignore NAs because some voters were of age but only registered AFTER the 2020 election
+firstTimeVotersIn2020Election <- function(df)
+{
+	df %>%
+ 	# birth_date > 18 years before 2016 presidential election
+ 	# and birth_date < 18 years before 2020 presidential election
+	filter(mdy(birth_date) > mdy("11.08.1998")) %>%
+	filter(mdy(birth_date) < mdy("11.03.2002"))
+
+	# here we could filter on original_reg_date but is.na does the job
+#	filter(!is.na(X11.03.2020.2020.presidential.election))
+}
+
+newfirstTimeVotersIn2020Election <- function(df)
+{
+	df %>%
+ 	# birth_date > 18 years before 2016 presidential election
+ 	# and birth_date < 18 years before 2020 presidential election
+	firstTimeVotersInElection(18, election2016Date) %>%
+	stopAgeForVotersInElection(18, election2020Date) %>%
+
+	# here we could filter on original_reg_date but is.na does the job
+	filter(!is.na(X11.03.2020.2020.presidential.election))
+}
+
+firstTimeVotersIn2016Election <- function(df)
+{
+	df %>%
+ 	# birth_date > 18 years before 2012 presidential election
+ 	# and birth_date < 18 years before 2016 presidential election
+	firstTimeVotersInElection(18, election2012Date) %>%
+	stopAgeForVotersInElection(18, election2016Date) %>%
+
+	# here we could filter on original_reg_date but is.na does the job
+	filter(!is.na(X11.08.2016.2016.general.election))
+}
+
+
+#################################################
+## 2024 ELECTION DATAFRAMES
+#################################################
+
+# create a dataframe containing everyone who voted in the last three presidential elections
+dfVotedIn3 <-
+	data %>%
+	votedIn2020() %>%
+	votedIn2016() %>%
+	votedIn2012() %>%
+	group_by(district, Xreg_at) %>%
+	tally()
+
+dfFirstTimeVoters <-
+	data %>%
+	filter(is.na(Xreg_at)) %>%			# local addresses only
+	group_by(district, Xreg_at) %>%
+	firstTimeVotersIn2024Election() %>%
+	tally()		# calculate the voter counts per district
+
+dfFirstTimeVotersByResidenceType <-		# includes all types of address
+	data %>%
+	group_by(district, Xreg_at) %>%
+	firstTimeVotersIn2024Election() %>%
+	tally()		# calculate the voter counts per district
+
+#################################################
+## 2020 ELECTION DATAFRAMES
+#################################################
+
+# young voters who turned 18 after the 2016 election and before the 2020 election
+dfFirstTimeVotersIn2020Election <-
+	data %>%
+	filter(is.na(Xreg_at)) %>%			# local addresses only
+	group_by(district, Xreg_at) %>%
+	firstTimeVotersIn2020Election() %>%
+	add_count("total")
+
+df2020FirstTimeVotersByResidenceType <-	# include all types of address
+	data %>%
+	group_by(district, Xreg_at) %>%
+	firstTimeVotersIn2020Election() %>%
+	add_count("total")
+
+
+# young voters who turned 18 and registered after the 2016 election
+dfFirstTimeLocalAddressVotersAfter2016 <-
+	data %>%
+	firstTimeVotersIn2020Election() %>%
+	filter(is.na(Xreg_at)) %>%			# local addresses only
+	group_by(district, Xreg_at) %>%
+	tally()		# calculate the voter counts per district
+
+dfFirstTimeVotersAfter2016 <-			# include all types of address
+	data %>%
+	firstTimeVotersIn2020Election() %>%
+	group_by(district, Xreg_at) %>%
+	tally()		# calculate the voter counts per district
+
+
+# We want to see actual turnout in 2020 for young voters who turned 18 after the 2016 election
+dfFirstTimeVoterTurnoutAfter2016 <-		# include all types of address
+	data %>%
+	firstTimeVotersIn2020Election() %>%
+	votedIn2020() %>%
+	group_by(district, Xreg_at) %>%
+	tally()
+
+# This dataframe allows us to see how many newly registered voters actually voted in 2020
+df2020NewVotersByVotedStatus <-		# includes all types of address
+	data %>%
+	firstTimeVotersIn2020Election() %>%
+	group_by(district, X11.03.2020.2020.presidential.election) %>%
+	tally()
+
+
+#################################################
+# INFO ABOUT RESIDENCE AND MAILING ADDRESSES
+#################################################
+
+# To include blanks in totals, use the addNA() function
+
+# Summarize the current registered address data.
+# NOTE: data$no_local_addr is a new column we created to tell whether an address is an apartment ("XA"),
+#	a student dorm ("XD"), missing entirely, probably homeless ("XN"), or "NA" (none of the above,
+#	i.e. a local address in Berkeley that is not an apartment or dorm).
+# NOTE that there are a small number of voters registered at the Berkeley Marina/Yacht Club,
+#	Peet's Coffee (Walnut/Vine), and other non-home addresses. They are lumped in with the
+#	other local addresses.
+
+#levels(data$addNA(data$no_local_addr))	# list the codes for registered-at address types ("XA, etc.)
+#summary(addNA(data$no_local_addr))		# show the number of voters at each reg address type
+
+# Summarize the current mailing address data
+# NOTE: data$no_local_mail_addr is the second new column we created, to tell whether a mailing address 
+#	is out of country ("XC"), out of state ("XS"), or none of the above ("NA") i.e. local.
+# Note that most voters do not have a different mailing address
+
+#levels(data$addNA(data$no_local_mail_addr))	# list the codes for mailing address types ("XC", etc.)
+#summary(addNA(data$no_local_mail_addr))		# show the number of voters for each mailing address type
+
+
+#################################################
+## WAYS TO SAVE A PLOT FOR LATER DISPLAY OR PRINTING
 #################################################
 
 # Create the plot and save it to a pdf file (without looking at it on screen first)
-#pdf(file="voters3.pdf")	# open a pdf file for writing
-#							# create the plot
+#pdf(file="voters3.pdf")	# open a (new or existing) pdf file to write to
+#					# create the plot
 #plotStackedColumnByDistrict("Xmail_to", pLegend="Residence type", pTitle="Local mailing addresses")
-#dev.off()					# close the pdf file (it now appears in your system's default directory)
+#dev.off()				# close the pdf file (it now appears in your system's default directory)
 
-
-# save the currently-displayed plot to a pdf file (voters3 in this case)
+# Save the currently-displayed plot to a pdf file (voters3 in this case)
 #ggsave("voters4.pdf")
 # "plot=plotname" to specify a particular plot
 
-# save a particular named plot to a pdf file
+# Save a particular named plot to a pdf file
 #pdf(file="voters3.pdf")
 #print(voters3)
 #dev.off()
 
 
 #################################################
-## PLOTS
+## PLOTS functions
 #################################################
 
 setLegendTitleTo <- function(legendTitle)
@@ -597,8 +608,15 @@ votersInLast3 <-
 	setLegendTitleTo("District")
 #votersInLast3
 
-# plot voter type by district
-# use one bar per residence type (4 for each district graph)
+# Get counts by residence type within each district
+dfResidenceTypeByDistrict <-
+	data %>%
+	group_by(district, Xreg_at) %>%
+	tally()
+#View(dfResidenceTypeByDistrict)
+
+# Plot voter type by district
+# Use one bar per residence type (4 for each district graph)
 votersPerResidenceType <-
 	dfResidenceTypeByDistrict %>%
 	ggplot(aes(x=addressLabelFor(Xreg_at))) +
@@ -613,7 +631,7 @@ votersPerResidenceType <-
 	setLegendTitleTo("Residence type")
 votersPerResidenceType
 
-genericPlot <- function(df=data, x="Xreg_at", barTextOffset, legendTitle="", wrapBy="district")
+facetPlot <- function(df=data, x="Xreg_at", barTextOffset, legendTitle="", wrapBy="district")
 {
 	df %>%
 	ggplot(aes(x=df[[x]] )) +
@@ -627,8 +645,8 @@ genericPlot <- function(df=data, x="Xreg_at", barTextOffset, legendTitle="", wra
 		x="",
 		y="Number of voters") 
 }
-votedInAll3 = genericPlot(dfVotedIn3, x="Xreg_at", barTextOffset=300, legendTitle="hello world", wrapBy="district")
+votedInAll3 = facetPlot(dfVotedIn3, x="Xreg_at", barTextOffset=300, legendTitle="hello world", wrapBy="district")
 votedInAll3
-votersPerResType = genericPlot(dfResidenceTypeByDistrict, x="Xreg_at", barTextOffset=500, legendTitle="Residence type", wrapBy="district")
+votersPerResType = facetPlot(dfResidenceTypeByDistrict, x="Xreg_at", barTextOffset=500, legendTitle="Residence type", wrapBy="district")
 votersPerResType
 

@@ -1,6 +1,19 @@
-csv -> tsv formatting
-cleaned headers
-cleaned data
+##############################################################################
+### History section
+##############################################################################
+
+Because the csv file received from the registrar of voters has embedded commas
+not only in the data but in the column headers as well, all the data columns
+after the "care_of" column had erroneous data that prevented any analysis of
+election data, residence information, dates, etc. This presented itself in
+for example, six extra empty columns and the resulting spread of proper data
+into inappropriate columns.
+
+We requested instead a tab-separated (tsv) file but this was not forthcoming
+so we embarked on cleaning up the data ourselves. This ended up taking a large
+chunk of our time and involved:
+	Cleaning the headers (realigning, renaming, deleting unused)
+	Cleaning data by manually adjusting missing commas
 
 To create a proper .tsv file after making spreadsheet changes:
 Read the .ods file into LibreOffice
@@ -9,26 +22,63 @@ Close the .ods file
 Open the .csv file using tab separator *and* check "trim spaces"
 Save a copy as .csv (rename to .tsv)
 
-using two Berkeley district maps
-cross-referenced precincts to districts
-maps are filed in the "maps" subdirectory
+The csv file from the registrar of voters has no district information,
+only precincts. In order to map precincts to districts we did the following:
 
-received legend information from registrar of voters
+Downloaded three Berkeley district maps from city open data site:
+Berkeley-City-Council-Districts.pdf
+Berkeley-Voting-Precincts-Map.pdf
+CouncilDistrictsE_2018.pdf for historical reference (precinct redistribution)
+
+Manually cross-referenced precincts to districts to create a "district" field in the data
+The maps are filed in the "maps" subdirectory
+
+Requested and received legend information from registrar of voters
+This explains the ANV etc codes in the csv file.
 "HISTORY CODE FOR VOTER HISTORY-2023.pdf"
 
-more data cleanup/corrections
+Found more data cleanup/corrections
 country == USA
 city == Albany
 still more out-of-country embedded commas
 
-created don't mail and don't contact categories
-header: Xno_mail
+Downloaded previous election returns from the registrar of voters:
+District 5 2016 and 2020
+nov-8-2016-comprehensive-results-report-councilmember-dist5.pdf
+District5.2020.results.png
+District5.ballots.returned.png
+(Note that the registrar of voters mischaracterizes the districts
+for the ballots-returned data i.e., district 2, 3, and 5 are labeled 3, 4, and 6)
+
+Downloaded voter information files from the registrar of voters:
+c001_g22_registration_by_g22_block20.csv
+c001_g22_registration_by_g22_srprec.csv
+c001_g22_sr_blk_map.csv
+c001_g22_voters_by_g22_block20.csv
+
+##############################################################################
+### Creation of new fields for analysis
+District
+Xmail_to
+Xreg_at
+##############################################################################
+
+Created don't mail and don't contact categories
+The out-of-country addresses may be in one of these categories:
+ foreign students residing in Berkeley
+ Berkeley residents working or studying overseas
+The out-of-state addresses are probably similar.
+In either case we probably wouldn't bother sending mail.
+
+header: Xmail_to
 XC: don't mail - mailing address is out of country
 XS: possible don't mail - mailing address is out of state
-don't contact if no physical address
+Don't contact if no physical address
 
-created apartment category for possible no physical contact
-header: Xno_addr
+Created apartment category for possible no physical contact
+Sophie expressed a desire to exclude apartment buildings from walk lists.
+
+header: Xreg_at
 XA: address is in an apartment building
  basis: 10 or more units at an address
  some will be miscategorized, but if we work on the assumption that
@@ -38,12 +88,31 @@ XN: there is no local address on file
  Note that there are several people registered at the marina.
  These are either at 1/2 Sea Wall or 0/1 University Ave.
  We didn't flag these.
-XD: student housing
+XD: student housing: dorms, student groups
 
 Fixed yet more bad data: street address in apartment # field
 
-VOTER ID 2101934 changed from 650 Addison to 651 Addison
+VOTER ID 2101934: we changed from 650 Addison (doesn't exist) to 651 Addison
 Note: someone is registered at 0 Walnut/Vine St. (Peet's Coffee)
+There are several people (assumed unhoused with no fixed address) registered
+at the Long Haul office on Shattuck. Useful for mailing but not for in-person
+contacts.
 
-generated plots
+##############################################################################
+### Bar graphs for data analysis
+##############################################################################
+Generated plots
+
+2020 election data plots for comparison/projection
+ Note that there are several current voters who were of voting age in the 2020
+ presidential election but were not registered to vote until later. These have
+ the status of NA (not eligible) for the 2020 election and may indicate an
+ opportunity to register first-time voters this time around.
+
+2024 plots for extrapolation
+ Note that the voter information we received from the registrar of voters is
+ from late 2023, so it is three years into the current four-year cycle. We
+ would therefore expect that the age 18-22 voter numbers are approximately
+ 3/4 the value we see in the 2020 election results. These numbers should
+ increase over the coming year leading up to the election.
 

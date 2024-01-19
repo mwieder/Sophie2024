@@ -120,3 +120,62 @@ Generated plots
  3/4 the value we see in the 2020 election results. These numbers should
  increase over the coming year leading up to the election.
 
+##############################################################################
+### Moving forward: NGP VAN
+##############################################################################
+
+Notes from online reviews:
+
+#####################
+* Currency of data:
+#####################
+First-time voters: our data from the registrar is current as of December. We will need updated info as we get closer to the election since it doesn't reflect voters who come of age this year. The official word from NGP VAN is that the Secretary of State is responsible for updating the underlying data, and VAN will get updated as soon as they get word from the SOS.
+
+From online review:
+Cons: That it can FAIL, and FAIL BADLY on election day. I didn't enjoy being screamed at by our Vice Chair because we could NOT chase people via phone who hadn't voted. The data were to update hourly, removing people who had voted, and nope, this did NOT happen. We used a simpler search, and then texted everyone who supposedly hadn't voted (thank you Scale to WIN, which is lovely), with lots of people who responded that "they had voted." BOO!
+
+#####################
+*  Cutting turfs:
+#####################
+Automatic vs manual cutting of turfs. Apparently there are these two ways of cutting turfs in VAN, but it's not clear at this point what the automatic procedure does. Also need to know if manual/automatic cutting can use Census blocks or just precincts. Once PDI implemented cutting of turfs using Census blocks to be the most efficient way of cutting turfs in PDI. Otherwise using precincts we found ourselves having to manually adjust the street/residence borders.
+
+From online review:
+Cons: I struggle with clipping turf in VAN. The process is nonintuitive and difficult. The mapping feature does not give the user enough information to clip turf correctly.
+
+#####################
+*  Email:
+#####################
+Note: that neither VAN nor PDI will produce lists of email addresses, as the email functionality is a paid option for both systems. Emailing in either case requires setting up a unique sending address so it can be monitored for email responses and setting the backend DMARC/SPK records in the sending email server to avoid spam blacklisting.
+
+From online review:
+Cons: Unfortunately some information is outdated, and the lack of email addresses (especially when so many are registered for VBM and have provided them to the SOE's) and the unreliable phone data is a hindrance.
+
+#####################
+* Phone banking: criticism of VAN is that some phone numbers can get out of date, but the phone banking data doesn't reflect the new changes when entered.
+#####################
+
+From online review:
+Pros: The Virtual Phonebank feature. After the trial and errors of creating script elements prior to actually putting it all together in your final script, being able to launch the phonebank session and send to callers via hyperlink is very convenient. Also, the reports that could be pulled from events, surveys, calls and canvassing made end of campaign reporting not so stressful.
+
+Cons: Bulk uploads are so finicky. If contact phone numbers are not in a particular format they are rejected and causes me clean and re-attempt several times. There is also an inconsistency in the data at times: I will create a list of contacts that were called (Contact Type: phone) and get one number but when I use the report manager sometimes the data doesn't match. I attest to maybe duplicate calls to same phone being shared by different contacts. But that is not the only inconsistency in the data.
+
+#####################
+* Training
+#####################
+From online reviews:
+Pros: The data is useful and updated in a timely way. Entering data is adequate, manipulating data is good. (But learning curve to use it is steep.) --- Mini Van is easy for a novice user to begin using it quickly, with little training. Unpaid volunteers are important to campaigns, the software needs to be easy to use to keep them volunteering.
+Cons: There is a steep learning curve on how to use NPG VAN. Training is inadequate. To successfully learn to use it needs someone who has been using it to do the individual training, we are counting on the goodwill of others. --- Mini-VAN has trouble with the map function, suddenly all the voters residences often disappear from the map. this happens at least 3 times during a 2 hour canvass. It's frustrating. We rely on unpaid volunteers, any frustration means they may not come and volunteer again.
+
+Cons: It can be difficult to learn. It makes it harder to train new Precinct Chairs when different levels of users see different views of VAN. For example, I do not understand why Precinct Chairs cannot see Scores.
+
+From online review:
+Cons: Query features are lacking. Creating queries to share is hard because it doesn't support variables or prompts.
+
+#####################
+* Email list sharing:
+	Can this be turned off? Sounds like it's on by default.
+#####################
+From online review:
+Cons: I am the potential donor/supporter. Once I pull the switch, I am on NGP VAN's mailing list forever. This list is evidently tied in with Act Blue. I have received as many as 40 solicitations a day with Act Blue's fingerprints on them. I routinely block further solicitations from that candidate no matter how worthwhile the individual's candidacy. I really feel as if I am being manipulated; I hate it.
+
+

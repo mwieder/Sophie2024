@@ -3,24 +3,26 @@
 ##############################################################################
 
 Because the csv file received from the registrar of voters has embedded commas
-not only in the data but in the column headers as well, all the data columns
+not only in various data but in three column headers as well, all the data columns
 after the "care_of" column had erroneous data that prevented any analysis of
-election data, residence information, dates, etc. This presented itself in
-for example, six extra empty columns and the resulting spread of proper data
-into inappropriate columns.
+election data, mailing address information, dates, etc. This presented itself in
+for example, six extra empty columns at the far right and the resulting
+misalignment of proper election history data into inappropriate columns.
 
 We requested instead a tab-separated (tsv) file but this was not forthcoming
-so we embarked on cleaning up the data ourselves. This ended up taking a large
-chunk of our time and involved:
+so we embarked on cleaning up the registrar's data ourselves. This ended up 
+taking a large chunk of our time and involved:
+	Reading the registrar's csv file into a spreadsheet (.ods) file, then
 	Cleaning the headers (realigning, renaming, deleting unused)
-	Cleaning data by manually adjusting missing commas
+	Cleaning data by manually viewing and adjusting into appropriate columns
+	Correcting typos in addresses and other incorrect data
 
-To create a proper .tsv file after making spreadsheet changes:
-Read the .ods file into LibreOffice
+To create a proper .tsv file _after_ making the above spreadsheet changes:
+Read the corrected .ods (spreadsheet) file into LibreOffice
 Save a Copy... with format .csv
 Close the .ods file
-Open the .csv file using tab separator *and* check "trim spaces"
-Save a copy as .csv (rename to .tsv)
+Open the .csv file using tab separator (instead of comma) *and* check "trim spaces"
+Save a copy renamed to .tsv)
 
 The csv file from the registrar of voters has no district information,
 only precincts. In order to map precincts to districts we did the following:
@@ -31,16 +33,18 @@ Berkeley-Voting-Precincts-Map.pdf
 CouncilDistrictsE_2018.pdf for historical reference (precinct redistribution)
 
 Manually cross-referenced precincts to districts to create a "district" field in the data
-The maps are filed in the "maps" subdirectory
+The maps are filed in the "maps" subdirectory.
 
 Requested and received legend information from registrar of voters
-This explains the ANV etc codes in the csv file.
+This explains the A N V etc codes in the csv file.
 "HISTORY CODE FOR VOTER HISTORY-2023.pdf"
 
 Found more data cleanup/corrections
 country == USA
-city == Albany
-still more out-of-country embedded commas
+city == Albany or Oakland for Berkeley addresses
+still more out-of-country embedded commas or other issues
+Made sure that all out-of-country mailing addresses now have their country in the
+  mail_country field.
 
 Downloaded previous election returns from the registrar of voters:
 District 5 2016 and 2020
@@ -57,23 +61,23 @@ c001_g22_sr_blk_map.csv
 c001_g22_voters_by_g22_block20.csv
 
 ##############################################################################
-### Creation of new fields for analysis
+### Creation of new fields for analysis (described below this comment).
 District
-Xmail_to
 Xreg_at
+Xmail_to
 ##############################################################################
 
 Created don't mail and don't contact categories
 The out-of-country addresses may be in one of these categories:
- foreign students residing in Berkeley
- Berkeley residents working or studying overseas
+	foreign students residing in Berkeley
+	Berkeley residents working or studying overseas
 The out-of-state addresses are probably similar.
-In either case we probably wouldn't bother sending mail.
+In either case we probably wouldn't bother sending mail out-of-state or out-of-country.
 
 header: Xmail_to
 XC: don't mail - mailing address is out of country
 XS: possible don't mail - mailing address is out of state
-Don't contact if no physical address
+Don't contact if no physical mailing address
 
 Created apartment category for possible no physical contact
 Sophie expressed a desire to exclude apartment buildings from walk lists.
@@ -81,9 +85,9 @@ Sophie expressed a desire to exclude apartment buildings from walk lists.
 header: Xreg_at
 XA: address is in an apartment building
  basis: 10 or more units at an address
- some will be miscategorized, but if we work on the assumption that
+ Some will be miscategorized, but if we work on the assumption that
  the apartment buildings we missed cancel the ones that aren't apartments
- then we have a ballpark estimate to start the discussion
+ then we have a ballpark estimate to start the discussion.
 XN: there is no local address on file
  Note that there are several people registered at the marina.
  These are either at 1/2 Sea Wall or 0/1 University Ave.

@@ -368,6 +368,13 @@ dfFirstTimeVotersByResidenceType <-		# includes all types of address
 	firstTimeVotersIn2024Election() %>%
 	tally()		# calculate the voter counts per district
 
+# Get counts by residence type within each district
+dfResidenceTypeByDistrict <-
+	data %>%
+	group_by(district, Xreg_at) %>%
+	tally()
+#View(dfResidenceTypeByDistrict)
+
 #################################################
 ## 2020 ELECTION DATAFRAMES
 #################################################
@@ -482,19 +489,40 @@ eliminateTicks <- function()
 	)
 }
 
-facetPlot <- function(df=data, x="Xreg_at", barTextOffset, legendTitle="", wrapBy="district", gTitle, xLabel="", yLabel="")
+barchartPlot <- function(df=data,
+	xColumn="Xreg_at",
+	barTextOffset,
+	legendTitle="",
+	gTitle,
+	xLabel="",
+	yLabel="",
+	wrapBy="district")
 {
 	df %>%
-	ggplot(aes(x=df[[x]] )) +
-	geom_col(aes(x=df[[x]], y=df$n, fill=addressLabelFor(df[[x]])))+
-	geom_text(aes(x = df[[x]], y=df$n+barTextOffset, group=wrapBy, label = df$n), size=4) +
+	ggplot(aes(x=df[[xColumn]] )) +
+	geom_col(aes(x=df[[xColumn]], y=df$n, fill=addressLabelFor(df[[xColumn]])))+
+	geom_text(aes(x = df[[xColumn]], y=df$n+barTextOffset, label = df$n), size=4) +
 	# eliminate unnecessary x-axis tick marks and labels
 	eliminateTicks() +
-	facet_wrap(df[[wrapBy]]) +	# make a separate chart for each district
 	setLegendTitleTo(legendTitle) +
 	labs(title=gTitle,
 		x=xLabel,
 		y=yLabel) 
+}
+
+facetPlot <- function(df=data,
+	xColumn="Xreg_at",
+	barTextOffset,
+	legendTitle="",
+	gTitle,
+	xLabel="",
+	yLabel="",
+	wrapBy="district"
+)
+{
+	df %>%
+	barchartPlot(xColumn, barTextOffset, legendTitle, gTitle, xLabel, yLabel, wrapBy) +
+	facet_wrap(df[[wrapBy]])	# make a separate chart for each district
 }
 
 #################################################
@@ -502,84 +530,49 @@ facetPlot <- function(df=data, x="Xreg_at", barTextOffset, legendTitle="", wrapB
 #################################################
 
 # voters reaching age 18 after the 2016 presidential election and before the 2020 election
-first_time_voters_after_2016 <- 
-	dfFirstTimeLocalAddressVotersAfter2016 %>%
-	ggplot(aes(x=n)) +
-	geom_col(aes(x=district, y=n, fill=as.factor(district)))+
-	scale_x_continuous(breaks=1:8) +
-	labs(title="First-time voters in the 2020 presidential election by district\n(not counting apartment or student dorm residents)",
-		x="District",
-		y="Number of voters") +
-	geom_text(aes(x = district, y = n+10, group=district, label = n), size=4) +
-	setLegendTitleTo("District")
-#first_time_voters_after_2016 # create plot on screen
-
-# stacked by same color
-#first_time_voters_after_2016_all_addresses <- 
-#	dfFirstTimeVotersAfter2016 %>%
-#	ggplot(aes(x=n)) +
-#	geom_col(aes(x=district, y=n, fill=as.factor(district)))+
-#	scale_x_continuous(breaks=1:8) +
-#	labs(title="First-time voters in the 2020 presidential election by district\n(all addresses)",
-#		x="District",
-#		y="Number of voters") +
-#	geom_text(aes(x = district, y = n+10, group=district, label = n), size=4) +
-#	setLegendTitleTo("District")
-#first_time_voters_after_2016_all_addresses # create plot on screen
-
-first_time_voters_after_2016_all_addresses = facetPlot(dfFirstTimeVotersAfter2016,
+first_time_voters_after_2016 <- barchartPlot(
+	dfFirstTimeLocalAddressVotersAfter2016,
+	"district",
 	barTextOffset=10,
 	legendTitle="District",
-	gTitle="First-time voters in the 2020 presidential election by district\n(all addresses)",
+	gTitle="First-time voters in the 2020 presidential election by district\n(not counting apartment or student dorm residents)",
 	xLabel="District",
-	yLabel="Number of voters")
+	yLabel="Number of voters"
+)
+first_time_voters_after_2016
+
+first_time_voters_after_2016_all_addresses = facetPlot(
+	dfFirstTimeVotersAfter2016,
+	barTextOffset=10,
+	legendTitle="District",
+	gTitle="First-time voters in the 2020 presidential election by district\n(all address types)",
+	xLabel="District",
+	yLabel="Number of voters"
+)
 first_time_voters_after_2016_all_addresses
 
-#first_time_registers_2016_by_residence_type <- 
-#	dfFirstTimeVotersAfter2016 %>%
-#	ggplot(aes(x=n)) +
-#	geom_col(aes(x=Xreg_at, y=n, fill=addressLabelFor(Xreg_at))) +
-#	labs(title="First-time voter registration in 2020 presidential election by residence type",
-#		x="District",
-#		y="Number of voters") +
-#	geom_text(aes(x = Xreg_at, y = n+25, group=district, label = n), size=4) +
-#	# eliminate unnecessary x-axis tick marks and labels
-#	eliminateTicks() +
-#	facet_wrap(dfFirstTimeVotersAfter2016$district) +	# make a separate chart for each district
-#	setLegendTitleTo("Residence type")
-#first_time_registers_2016_by_residence_type # create plot on screen
-
-first_time_registers_2016_by_residence_type = facetPlot(dfFirstTimeVotersAfter2016,
+first_time_registers_2016_by_residence_type <- facetPlot(
+	dfFirstTimeVotersAfter2016,
 	barTextOffset=25,
 	legendTitle="Residence type",
-	gTitle="First-time voter turnout in 2020 presidential election by residence type",
+	gTitle="First-time voter registration in 2020 presidential election by residence type",
 	xLabel="District",
-	yLabel="Number of voters")
+	yLabel="Number of voters"
+)
 first_time_registers_2016_by_residence_type
 
-#first_time_voter_turnout_after_2016_by_residence_type <- 
-#	dfFirstTimeVoterTurnoutAfter2016 %>%
-#	ggplot(aes(x=n)) +
-#	geom_col(aes(x=Xreg_at, y=n, fill=addressLabelFor(Xreg_at))) +
-#	labs(title="First-time voter turnout in 2020 presidential election by residence type",
-#		x="District",
-#		y="Number of voters") +
-#	geom_text(aes(x = Xreg_at, y = n+25, group=district, label = n), size=4) +
-#	# eliminate unnecessary x-axis tick marks and labels
-#	eliminateTicks() +
-#	facet_wrap(dfFirstTimeVoterTurnoutAfter2016$district) +	# make a separate chart for each district
-#	setLegendTitleTo("Residence type")
-#first_time_voter_turnout_after_2016_by_residence_type # create plot on screen
-
-first_time_voter_turnout_after_2016_by_residence_type = facetPlot(dfFirstTimeVoterTurnoutAfter2016,
+first_time_voter_turnout_after_2016_by_residence_type <- facetPlot(
+	dfFirstTimeVoterTurnoutAfter2016,
 	barTextOffset=25,
 	legendTitle="Residence type",
 	gTitle="First-time voters in 2020 presidential election by residence type",
 	xLabel="District",
-	yLabel="Number of voters")
+	yLabel="Number of voters"
+)
 first_time_voter_turnout_after_2016_by_residence_type
 
-howManyNewRegisteredVotersActuallyVotedIn2020 <-
+# This variation shows actual status ("By mail, Didn't vote, In person, NA") for voter status
+oldhowManyNewRegisteredVotersActuallyVotedIn2020 <-
 	df2020NewVotersByVotedStatus %>%
 
 	ggplot(aes(x=n)) +
@@ -592,7 +585,31 @@ howManyNewRegisteredVotersActuallyVotedIn2020 <-
 	eliminateTicks() +
 	facet_wrap(df2020NewVotersByVotedStatus$district) +	# make a separate chart for each district
 	setLegendTitleTo("Voter status")
-#howManyNewRegisteredVotersActuallyVotedIn2020
+
+# This variation shows "A,N,V,Other" for voter status
+howManyNewRegisteredVotersActuallyVotedIn2020 <- facetPlot(
+	df2020NewVotersByVotedStatus,
+	"X11.03.2020.2020.presidential.election",
+	barTextOffset=25,
+	legendTitle="Voter status",
+	gTitle="How many newly-registered actually voted in 2020 presidential election\n(by district)",
+	xLabel="District",
+	yLabel="Number of voters",
+	wrapBy="district"
+)
+howManyNewRegisteredVotersActuallyVotedIn2020
+
+howManyNewRegisteredVotersActuallyVotedIn2020ByVoterStatus <- facetPlot(
+	df2020NewVotersByVotedStatus,
+	"X11.03.2020.2020.presidential.election",
+	barTextOffset=25,
+	legendTitle="Voter status",
+	gTitle="How many newly-registered actually voted in 2020 presidential election\n(by district)",
+	xLabel="District",
+	yLabel="Number of voters",
+	wrapBy="district"
+)
+howManyNewRegisteredVotersActuallyVotedIn2020ByVoterStatus
 
 #################################################
 ## CURRENT DATA PLOTS
@@ -618,75 +635,34 @@ first_time_voters_after_2020 <-
 #first_time_voters_after_2020 # create plot on screen
 
 # voters reaching age 18 after the 2020 presidential election with separate residence type bars
-#first_time_voters_after_2020_by_residence_type <- 
-#	dfFirstTimeVotersByResidenceType %>%
-#	ggplot(aes(x=n)) +
-#	geom_col(aes(x=Xreg_at, y=n, fill=addressLabelFor(Xreg_at)))+
-#	labs(title="First-time voters in 2024 presidential election by residence type",
-#		x="District",
-#		y="Number of voters") +
-#	geom_text(aes(x = Xreg_at, y = n+10, group=district, label = n), size=4) +
-#	# eliminate unnecessary x-axis tick marks and labels
-#	eliminateTicks() +
-#	facet_wrap(dfFirstTimeVotersByResidenceType$district) +	# make a separate chart for each district
-#	setLegendTitleTo("Residence type")
-#first_time_voters_after_2020_by_residence_type
-
-first_time_voters_after_2020_by_residence_type = facetPlot(dfFirstTimeVotersByResidenceType,
+first_time_voters_after_2020_by_residence_type <-facetPlot(
+	dfFirstTimeVotersByResidenceType,
 	barTextOffset=10,
 	legendTitle="Residence type",
 	gTitle="First-time voters in 2024 presidential election by residence type",
 	xLabel="District",
-	yLabel="Number of voters")
+	yLabel="Number of voters"
+)
 first_time_voters_after_2020_by_residence_type
 
 # Plot voters who have voted in the last 3 presidential elections
-#votersInLast3 <-
-#	dfVotedIn3 %>%
-#	ggplot(aes(x=Xreg_at )) +
-#	geom_col(aes(x=Xreg_at, y=n, fill=addressLabelFor(Xreg_at)))+
-#	labs(title="Active voters in all last 3 presidential elections (2012,2016,2020)",
-#		x="",
-#		y="Number of voters") +
-#	geom_text(aes(x = Xreg_at, y=n+300, group=district, label = 	n), size=4) +
-#	# eliminate unnecessary x-axis tick marks and labels
-#	eliminateTicks() +
-#	facet_wrap(dfVotedIn3$district) +	# make a separate chart for each district
-#	setLegendTitleTo("District")
-#votersInLast3
 
-# Get counts by residence type within each district
-dfResidenceTypeByDistrict <-
-	data %>%
-	group_by(district, Xreg_at) %>%
-	tally()
-#View(dfResidenceTypeByDistrict)
-
-votedInAll3 = facetPlot(dfVotedIn3,
+votedInAll3 <- facetPlot(
+	dfVotedIn3,
 	barTextOffset=300,
 	legendTitle="Residence type",
-	gTitle="Active voters in all last 3 presidential elections (2012,2016,2020)")
+	gTitle="Active voters in all last 3 presidential elections (2012,2016,2020)"
+)
 votedInAll3
 
 # plot voter type by district
 # use one bar per residence type (4 for each district graph)
-#votersPerResidenceType <-
-#	dfResidenceTypeByDistrict %>%
-#	ggplot(aes(x=addressLabelFor(Xreg_at))) +
-#	geom_col(aes(x=addressLabelFor(Xreg_at), y=n, fill=addressLabelFor(Xreg_at)))+
-#	labs(title="All registered voters 2024 per residence type",
-#		x="",
-#		y="Number of voters") +
-#	geom_text(aes(x = addressLabelFor(Xreg_at), y = n+500, group=district, label = n), size=3) +
-#	# eliminate unnecessary x-axis tick marks and labels
-#	eliminateTicks() +
-#	facet_wrap(dfResidenceTypeByDistrict$district) +
-#	setLegendTitleTo("Residence type")
-#votersPerResidenceType
 
-votersPerResType = facetPlot(dfResidenceTypeByDistrict,
+votersPerResType <- facetPlot(
+	dfResidenceTypeByDistrict,
 	barTextOffset=500,
 	legendTitle="Residence type",
-	gTitle="All registered voters 2024 per residence type")
+	gTitle="All registered voters 2024 per residence type"
+)
 votersPerResType
 

@@ -1,13 +1,13 @@
-##############################################################################
+#################################################
 # This file contains code to read voter data into R and start to analyze it.
 #	When you open an R or RStudio session, execute this file with the 
 #	source() command. It will retrieve and execute the pre-written
 #	programs within, skipping all lines that begin with #.
-##############################################################################
+#################################################
 
-
-# install.packages("tidyverse")	# Only need to execute this command once.
-#						# It installs a "package" of R functions that we'll need.
+# *** Only need to execute this command once.
+# *** It installs a "package" of R functions that we'll need.
+# install.packages("tidyverse")
 
 library(tidyverse)		# Do execute this every time you open a new R session.
 

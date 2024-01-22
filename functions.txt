@@ -263,82 +263,44 @@ votedIn2012 <- function(df)
 	)
 }
 
-##
-## Functions to find voters in various age ranges as of selected election dates.
-##
 
-# Find the (birth)date that is exactly beginAge years earlier than the electionDate in question.
-# We will use this function below to find voters who are 18 by various election dates.
-electionDateMinusAge <- function(beginAge, electionDate)	
-{
-	y = year(mdy(electionDate))
-	m = month(mdy(electionDate))
-	d = day(mdy(electionDate))
-	minYear <- y - beginAge
-	targetDate <- paste0(m,".",d,".",minYear)
-}
+#############
+## Functions to find new voters who have turned 18 as of 2020 or 2024
+#############
 
-# Select all voters who are younger than beginAge (such as 18) on the selected electionDate
-# by filtering out (omitting) all voters who are older than 18 on that date.
-firstTimeVotersInElection <- function(df, beginAge, electionDate)
+# Young voters who turned 18 after the 2020 election but before the 2024 election,
+# and who are currently registered to vote.
+# (Our data only contains people who have registered for at least one election as of December 2023.)
+youngRegistrantsIn2024Election <- function(df)
 {
-	youngestDate <- electionDateMinusAge(beginAge, electionDate)
 	df %>%
-	filter(
-		mdy(birth_date) > mdy(youngestDate)	# birth_date > 18 years as of last presidential election
-	)
-}
-# Select all voters who are younger than the oldestAge before the electionDate
-stopAgeForVotersInElection <- function(df, C, electionDate)
-{
-	oldestDate <- electionDateMinusAge(oldestAge, electionDate)
-	df %>%
-	filter(
-		mdy(birth_date) < mdy(oldestDate) # birth_date > 18 years before last presidential election
-	)
-}
-
-firstTimeVotersIn2024Election <- function(df)
-{
-	firstTimeVotersInElection(df, 18, "11.03.2020")
+ 	# birth_date > 18 years before 2020 presidential election
+ 	# and birth_date < 18 years before 2024 presidential election
+	filter(mdy(birth_date) > mdy("11.03.2002")) %>%
+	filter(mdy(birth_date) < mdy("11.05.2006"))
 }
 
 # Young voters who turned 18 after the 2016 election but before the 2020 election.
-# Have to ignore NAs because some voters were of age but only registered AFTER the 2020 election
-firstTimeVotersIn2020Election <- function(df)
+# These may or may not have registered in time to vote in the 2020 presidential election.
+possibleYoungVotersIn2020Election <- function(df)
 {
 	df %>%
  	# birth_date > 18 years before 2016 presidential election
  	# and birth_date < 18 years before 2020 presidential election
 	filter(mdy(birth_date) > mdy("11.08.1998")) %>%
 	filter(mdy(birth_date) < mdy("11.03.2002"))
-
-	# here we could filter on original_reg_date but is.na does the job
-#	filter(!is.na(X11.03.2020.2020.presidential.election))
 }
 
-newfirstTimeVotersIn2020Election <- function(df)
+# Young voters who turned 18 after the 2016 election but before the 2020 election,
+# AND who registered to vote in time for the 2020 presidential election.
+# Have to ignore NAs because some voters were of age but only registered AFTER the 2020 election
+youngRegistrantsIn2020Election <- function(df)
 {
-	df %>%
- 	# birth_date > 18 years before 2016 presidential election
- 	# and birth_date < 18 years before 2020 presidential election
-	firstTimeVotersInElection(18, election2016Date) %>%
-	stopAgeForVotersInElection(18, election2020Date) %>%
+	possibleYoungVotersIn2020Election(df) %>%
 
-	# here we could filter on original_reg_date but is.na does the job
+	# Ignore those who have not yet registered to vote in the 2020 election.
+	# Here we could filter on original_reg_date but not is.na does the job
 	filter(!is.na(X11.03.2020.2020.presidential.election))
-}
-
-firstTimeVotersIn2016Election <- function(df)
-{
-	df %>%
- 	# birth_date > 18 years before 2012 presidential election
- 	# and birth_date < 18 years before 2016 presidential election
-	firstTimeVotersInElection(18, election2012Date) %>%
-	stopAgeForVotersInElection(18, election2016Date) %>%
-
-	# here we could filter on original_reg_date but is.na does the job
-	filter(!is.na(X11.08.2016.2016.general.election))
 }
 
 
@@ -346,7 +308,7 @@ firstTimeVotersIn2016Election <- function(df)
 ## 2024 ELECTION DATAFRAMES
 #################################################
 
-# create a dataframe containing everyone who voted in the last three presidential elections
+# Get counts by district of everyone who voted in the last three presidential elections
 dfVotedIn3 <-
 	data %>%
 	votedIn2020() %>%
@@ -355,6 +317,7 @@ dfVotedIn3 <-
 	group_by(district, Xreg_at) %>%
 	tally()
 
+<<<<<<< Updated upstream
 dfFirstTimeVoters <-
 	data %>%
 	filter(is.na(Xreg_at)) %>%			# local addresses only
@@ -368,52 +331,72 @@ dfFirstTimeVotersByResidenceType <-		# includes all types of address
 	firstTimeVotersIn2024Election() %>%
 	tally()		# calculate the voter counts per district
 
+=======
+# Get counts of all voters by residence type within each district
+dfResidenceTypeByDistrict <-
+	data %>%
+	group_by(district, Xreg_at) %>%
+	tally()		# calculate the voter counts per district
+#View(dfResidenceTypeByDistrict)
+
+# Get counts of registrants who turned 18 since the 2020 presidential election
+# who are in residences other than dorms or apartments
+dfYoungRegistrants <-
+	data %>%
+	filter(is.na(Xreg_at)) %>%			# local addresses only
+	group_by(district, Xreg_at) %>%
+	youngRegistrantsIn2024Election() %>%
+	tally()		# calculate the voter counts per district
+
+# Get counts of all registrants who turned 18 since the 2020 presidential election
+dfYoungRegistrantsByResidenceType <-		# includes all types of address
+	data %>%
+	group_by(district, Xreg_at) %>%
+	youngRegistrantsIn2024Election() %>%
+	tally()		# calculate the voter counts per district
+
+
+>>>>>>> Stashed changes
 #################################################
 ## 2020 ELECTION DATAFRAMES
 #################################################
 
-# young voters who turned 18 after the 2016 election and before the 2020 election
-dfFirstTimeVotersIn2020Election <-
+# Young voters who turned 18 after the 2016 election and before 2020 presidential election.
+# These were all eligible to vote in the 2020 election but may not have registered or voted by then.
+dfPossibleYoungLocalAddressVotersIn2020Election <-
 	data %>%
-	filter(is.na(Xreg_at)) %>%			# local addresses only
-	group_by(district, Xreg_at) %>%
-	firstTimeVotersIn2020Election() %>%
-	add_count("total")
-
-df2020FirstTimeVotersByResidenceType <-	# include all types of address
-	data %>%
-	group_by(district, Xreg_at) %>%
-	firstTimeVotersIn2020Election() %>%
-	add_count("total")
-
-
-# young voters who turned 18 and registered after the 2016 election
-dfFirstTimeLocalAddressVotersAfter2016 <-
-	data %>%
-	firstTimeVotersIn2020Election() %>%
+	possibleYoungVotersIn2020Election() %>%
 	filter(is.na(Xreg_at)) %>%			# local addresses only
 	group_by(district, Xreg_at) %>%
 	tally()		# calculate the voter counts per district
 
-dfFirstTimeVotersAfter2016 <-			# include all types of address
+# Young voters who turned 18 after the 2016 election and and registered before 2020 presidential election
+dfYoungLocalAddressVotersAfter2016 <-
 	data %>%
-	firstTimeVotersIn2020Election() %>%
+	youngRegistrantsIn2020Election() %>%
+	filter(is.na(Xreg_at)) %>%			# local addresses only
+	group_by(district, Xreg_at) %>%
+	tally()		# calculate the voter counts per district
+
+dfYoungVotersAfter2016 <-			# include all types of address
+	data %>%
+	youngRegistrantsIn2020Election() %>%
 	group_by(district, Xreg_at) %>%
 	tally()		# calculate the voter counts per district
 
 
 # We want to see actual turnout in 2020 for young voters who turned 18 after the 2016 election
-dfFirstTimeVoterTurnoutAfter2016 <-		# include all types of address
+dfYoungVoterTurnoutAfter2016 <-		# include all types of address
 	data %>%
-	firstTimeVotersIn2020Election() %>%
+	youngRegistrantsIn2020Election() %>%
 	votedIn2020() %>%
 	group_by(district, Xreg_at) %>%
 	tally()
 
 # This dataframe allows us to see how many newly registered voters actually voted in 2020
-df2020NewVotersByVotedStatus <-		# includes all types of address
+df2020YoungVotersByVotedStatus <-		# includes all types of address
 	data %>%
-	firstTimeVotersIn2020Election() %>%
+	youngRegistrantsIn2020Election() %>%
 	group_by(district, X11.03.2020.2020.presidential.election) %>%
 	tally()
 
@@ -482,10 +465,51 @@ eliminateTicks <- function()
 	)
 }
 
+<<<<<<< Updated upstream
+=======
+# Create a template for bar chart plots, which includes the pieces that all our bar charts will
+# have in common, and sets up defaults for each of them.
+# This helps to avoid repeating the same commands in multiple charts.
+# 
+barchartPlot <- function(df=data,
+	xColumn="Xreg_at",
+	barTextOffset,
+	gTitle, xLabel="", yLabel="", legendTitle="",
+	wrapBy="district")
+{
+	df %>%
+	ggplot(aes(x=df[[xColumn]] )) +
+	geom_col(aes(x=df[[xColumn]], y=df$n, fill=addressLabelFor(df[[xColumn]])))+
+	geom_text(aes(x = df[[xColumn]], y=df$n+barTextOffset, label = df$n), size=4) +
+
+	labs(title=gTitle, x=xLabel, y=yLabel) +
+	setLegendTitleTo(legendTitle) +
+
+	# eliminate unnecessary x-axis tick marks and labels
+	eliminateTicks()
+}
+
+# Create a template for facet plots, which contain a separate barchart for each district.
+# The facetPlot() function starts with the barchartPlot() model, but must include a 
+# second function called facet_wrap().
+facetPlot <- function(df=data,
+	xColumn="Xreg_at",
+	barTextOffset,
+	gTitle, xLabel="", yLabel="", legendTitle="",
+	wrapBy="district"
+)
+{
+	df %>%
+	barchartPlot(xColumn, barTextOffset, gTitle, xLabel, yLabel, legendTitle, wrapBy) +
+	facet_wrap(df[[wrapBy]])	# make a separate chart for each district
+}
+
+>>>>>>> Stashed changes
 #################################################
 ## 2020 ELECTION DATA PLOTS
 #################################################
 
+<<<<<<< Updated upstream
 # voters reaching age 18 after the 2016 presidential election and before the 2020 election
 first_time_voters_after_2016 <- 
 	dfFirstTimeLocalAddressVotersAfter2016 %>%
@@ -539,6 +563,45 @@ first_time_voter_turnout_after_2016_by_residence_type <-
 	facet_wrap(dfFirstTimeVoterTurnoutAfter2016$district) +	# make a separate chart for each district
 	setLegendTitleTo("Residence type")
 #first_time_voter_turnout_after_2016_by_residence_type # create plot on screen
+=======
+# Voters reaching age 18 after the 2016 presidential election and before the 2020 election
+possible_first_time_voters_after_2016 <- barchartPlot(dfPossibleYoungLocalAddressVotersIn2020Election,
+	"district",
+	barTextOffset=10,
+
+	gTitle="18-22 year olds as of the 2020 presidential election by district\n(not counting apartment or student dorm residents)",
+	xLabel="District", yLabel="Number of voters",	legendTitle="District"
+)
+possible_first_time_voters_after_2016
+
+first_time_voters_after_2016 <- barchartPlot(dfYoungLocalAddressVotersAfter2016,
+	"district",
+	barTextOffset=10,
+
+	gTitle="18-22 year olds as of the 2020 presidential election by district\n(not counting apartment or student dorm residents)",
+	xLabel="District", yLabel="Number of voters",	legendTitle="District"
+)
+first_time_voters_after_2016
+
+# Same voters as above, but dividing each district by residence type
+first_time_registers_2016_by_residence_type <- facetPlot(dfYoungVotersAfter2016,
+	barTextOffset=40,
+
+	gTitle="First-time voter registration in 2020 presidential election by residence type",
+	xLabel="District", yLabel="Number of voters", legendTitle="Residence type"
+)
+first_time_registers_2016_by_residence_type
+
+first_time_voter_turnout_after_2016_by_residence_type <- facetPlot(
+	dfYoungVoterTurnoutAfter2016,
+	barTextOffset=25,
+	legendTitle="Residence type",
+	gTitle="First-time voter actual turnout in 2020 presidential election by residence type",
+	xLabel="District",
+	yLabel="Number of voters"
+)
+first_time_voter_turnout_after_2016_by_residence_type
+>>>>>>> Stashed changes
 
 howManyNewRegisteredVotersActuallyVotedIn2020 <-
 	df2020NewVotersByVotedStatus %>%
@@ -553,7 +616,23 @@ howManyNewRegisteredVotersActuallyVotedIn2020 <-
 	eliminateTicks() +
 	facet_wrap(df2020NewVotersByVotedStatus$district) +	# make a separate chart for each district
 	setLegendTitleTo("Voter status")
+<<<<<<< Updated upstream
 #howManyNewRegisteredVotersActuallyVotedIn2020
+=======
+
+# This variation shows "A,N,V,Other" for voter status
+howManyNewRegisteredVotersActuallyVotedIn2020 <- facetPlot(
+	df2020NewVotersByVotedStatus,
+	"X11.03.2020.2020.presidential.election",
+	barTextOffset=25,
+	legendTitle="Voter status",
+	gTitle="How many newly-registered actually voted in 2020 presidential election\n(by district)",
+	xLabel="District",
+	yLabel="Number of voters",
+	wrapBy="district"
+)
+howManyNewRegisteredVotersActuallyVotedIn2020
+>>>>>>> Stashed changes
 
 #################################################
 ## CURRENT DATA PLOTS
@@ -566,7 +645,7 @@ howManyNewRegisteredVotersActuallyVotedIn2020 <-
 # The 2024 new voter registration levels are currently approximately 75% of the 2020 levels.
 
 first_time_voters_after_2020 <- 
-	dfFirstTimeVoters %>%
+	dfYoungRegistrants %>%
 	ggplot(aes(x=n)) +
 	expand_limits(y=c(0, 500)) +
 	geom_col(aes(x=district, y=n, fill=as.factor(district)))+
@@ -579,6 +658,7 @@ first_time_voters_after_2020 <-
 #first_time_voters_after_2020 # create plot on screen
 
 # voters reaching age 18 after the 2020 presidential election with separate residence type bars
+<<<<<<< Updated upstream
 first_time_voters_after_2020_by_residence_type <- 
 	dfFirstTimeVotersByResidenceType %>%
 	ggplot(aes(x=n)) +
@@ -592,6 +672,17 @@ first_time_voters_after_2020_by_residence_type <-
 	facet_wrap(dfFirstTimeVotersByResidenceType$district) +	# make a separate chart for each district
 	setLegendTitleTo("Residence type")
 #first_time_voters_after_2020_by_residence_type
+=======
+first_time_voters_after_2020_by_residence_type <-facetPlot(
+	dfYoungRegistrantsByResidenceType,
+	barTextOffset=10,
+	legendTitle="Residence type",
+	gTitle="First-time voters in 2024 presidential election by residence type",
+	xLabel="District",
+	yLabel="Number of voters"
+)
+first_time_voters_after_2020_by_residence_type
+>>>>>>> Stashed changes
 
 # Plot voters who have voted in the last 3 presidential elections
 votersInLast3 <-

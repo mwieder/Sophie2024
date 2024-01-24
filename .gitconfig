@@ -1,0 +1,30 @@
+[user]
+	name = Mark Wieder
+	email = mwieder@ahsoftware.net
+
+[alias]
+	a = add
+	c = commit --verbose
+	co = checkout
+	cob = checkout -b
+	cp = cherry-pick
+	br = branch
+	r = reset
+	fl = log -u
+	r1 = reset HEAD\\^
+	r2 = reset HEAD\\^^
+	rh2 = reset HEAD\\^^ --hard
+	rh1 = reset HEAD\\^ --hard
+	rh = reset --hard
+	dl = !git ll -1
+	la = !git config -l | grep alias | cut -c 7-
+	l = log --pretty=format:%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\[%cn] --decorate --date=short
+	graph = log --graph --color --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
+#	alias.b = !git for-each-ref --sort='-authordate' --format='%(authordate)%09%(objectname:short)%09%(refname)' refs/heads | sed -e 's-refs/heads/--'
+	st = status -s
+[rebase]
+	autostash = true
+[core]
+	autocrlf = false
+[push]
+	default = simple
